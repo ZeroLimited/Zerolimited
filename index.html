@@ -67,6 +67,7 @@ header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(5
 .qty{display:flex;align-items:center;gap:13px;margin-top:13px}.qty button{background:none;border:1px solid #444;width:25px;height:25px}.qty span{font:10px var(--mono)}
 .cart-foot{border-top:1px solid var(--line);padding-top:20px}.subtotal{display:flex;justify-content:space-between;font:11px var(--mono);margin-bottom:18px}
 .checkout{width:100%;padding:16px;background:#f1f0ed;color:#080808;border:0;font:10px var(--mono);letter-spacing:.15em}.checkout-note{font:9px var(--mono);color:#777;text-align:center;line-height:1.7;margin-top:12px}
+.checkout-modal{position:fixed;inset:0;z-index:40;display:none;place-items:center;padding:18px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}.checkout-modal.show{display:grid}.checkout-panel{width:min(560px,100%);max-height:92vh;overflow:auto;background:#111;border:1px solid var(--line);padding:26px}.checkout-panel h2{font-size:26px;letter-spacing:-.06em;margin:0 0 6px}.checkout-panel .sub{font:10px var(--mono);color:#888;margin:0 0 22px}.checkout-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.checkout-form label{display:flex;flex-direction:column;gap:7px;font:9px var(--mono);letter-spacing:.1em;color:#aaa}.checkout-form label.full{grid-column:1/-1}.checkout-form input,.checkout-form textarea{width:100%;background:#090909;border:1px solid #393939;color:#fff;padding:13px;font:12px var(--sans);outline:none}.checkout-form input:focus,.checkout-form textarea:focus{border-color:#aaa}.checkout-form textarea{min-height:76px;resize:vertical}.cod-choice{grid-column:1/-1;border:1px solid #555;padding:13px;font:10px var(--mono);color:#eee}.checkout-actions{grid-column:1/-1;display:flex;gap:10px;margin-top:5px}.checkout-actions button{flex:1;padding:15px;border:1px solid #555;background:transparent;font:10px var(--mono);letter-spacing:.1em}.checkout-actions button[type=submit]{background:#f1f0ed;color:#080808;border-color:#f1f0ed}.checkout-actions button:disabled{opacity:.5;cursor:wait}.checkout-status{grid-column:1/-1;min-height:16px;font:10px var(--mono);color:#bbb;line-height:1.6}.checkout-note{font:9px var(--mono);color:#777;text-align:center;line-height:1.7;margin-top:12px}
 .toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,20px);background:#eee;color:#111;padding:13px 18px;font:10px var(--mono);letter-spacing:.08em;z-index:50;opacity:0;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
 .reveal{opacity:0;filter:blur(12px);transform:translateY(28px);transition:opacity .8s ease,filter .8s ease,transform .8s ease}.reveal.visible{opacity:1;filter:blur(0);transform:translateY(0)}
 @media(max-width:700px){.nav{height:64px;padding:0 5vw;grid-template-columns:1fr auto}.nav-links{display:none}.hero{min-height:570px;padding:85px 7vw}.hero:after{top:18%;right:-10vw}.hero h1{font-size:clamp(58px,15vw,100px)}.hero-scroll{right:6vw}.collection{padding:75px 5vw 90px}.grid{gap:34px 12px}.product-info h3{font-size:16px}.product-bottom{align-items:flex-start;flex-direction:column;gap:13px}.add-btn{width:100%;display:flex;justify-content:space-between}.product-image{aspect-ratio:1/1}.section-head{align-items:flex-start}.collection-side{font-size:9px}.footer{align-items:flex-start;flex-direction:column}.footer-right{text-align:left}.search-wrap.open input{width:130px}}
@@ -179,8 +180,29 @@ header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(5
 <aside class="drawer" id="drawer" aria-label="Shopping cart" aria-hidden="true">
   <div class="drawer-head"><h2>YOUR BAG <span style="color:#777;font:11px var(--mono)" id="drawerCount">(0)</span></h2><button class="close-btn" id="closeCart" aria-label="Close cart">×</button></div>
   <div class="cart-items" id="cartItems"><div class="cart-empty">YOUR BAG IS EMPTY.<br>FIND YOUR 911.</div></div>
-  <div class="cart-foot"><div class="subtotal"><span>SUBTOTAL</span><strong id="subtotal">0 LE</strong></div><button class="checkout" id="checkout">CONTINUE TO CHECKOUT ↗</button><div class="checkout-note">DEMO STORE — CHECKOUT IS NOT CONNECTED TO PAYMENTS.</div></div>
+  <div class="cart-foot"><div class="subtotal"><span>SUBTOTAL</span><strong id="subtotal">0 LE</strong></div><button class="checkout" id="checkout">CHECKOUT — CASH ON DELIVERY ↗</button><div class="checkout-note">PAY CASH WHEN YOUR ORDER ARRIVES.</div></div>
 </aside>
+<div class="checkout-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+  <div class="checkout-panel">
+    <div class="drawer-head"><div><h2 id="checkoutTitle">DELIVERY DETAILS</h2><p class="sub">COMPLETE YOUR ORDER · CASH ON DELIVERY</p></div><button class="close-btn" id="closeCheckout" aria-label="Close checkout">×</button></div>
+    <form class="checkout-form" id="checkoutForm">
+      <label>FULL NAME<input name="Full name" autocomplete="name" required maxlength="100" placeholder="Your name"></label>
+      <label>PHONE NUMBER<input name="Phone number" type="tel" autocomplete="tel" required maxlength="30" placeholder="Your phone number"></label>
+      <label>CITY<input name="City" autocomplete="address-level2" required maxlength="80" placeholder="Your city"></label>
+      <label>AREA / DISTRICT<input name="Area / district" required maxlength="100" placeholder="Your area"></label>
+      <label class="full">FULL DELIVERY ADDRESS<textarea name="Delivery address" autocomplete="street-address" required maxlength="500" placeholder="Street, building, floor, apartment..."></textarea></label>
+      <label class="full">ORDER NOTES (OPTIONAL)<textarea name="Order notes" maxlength="500" placeholder="Anything we should know?"></textarea></label>
+      <div class="cod-choice">✓ PAYMENT METHOD: CASH ON DELIVERY</div>
+      <input type="hidden" name="_subject" value="New 911 // ZEROLIMITED COD order">
+      <input type="hidden" name="Order summary" id="orderSummary">
+      <input type="hidden" name="Order total" id="orderTotal">
+      <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+      <div class="checkout-status" id="checkoutStatus" aria-live="polite"></div>
+      <div class="checkout-actions"><button type="button" id="cancelCheckout">BACK TO BAG</button><button type="submit" id="placeOrder">PLACE ORDER ↗</button></div>
+    </form>
+    <p class="checkout-note">Your details will be sent by email to the store to arrange delivery. No online payment is taken.</p>
+  </div>
+</div>
 <div class="toast" id="toast">ADDED TO YOUR BAG</div>
 <script>
 const PRICE=1799;
@@ -210,7 +232,35 @@ $("#cartItems").addEventListener("click",e=>{
  const item=cart[b.dataset.sku];if(!item)return;
  item.qty+=b.dataset.action==="plus"?1:-1;if(item.qty<=0)delete cart[b.dataset.sku];renderCart();
 });
-$("#checkout").addEventListener("click",()=>showToast(cartQty()?"CHECKOUT IS A DEMO — NO PAYMENT TAKEN":"YOUR BAG IS EMPTY"));
+function openCheckout(){
+ if(!cartQty()){showToast("YOUR BAG IS EMPTY");return;}
+ closeCart();
+ const summary=Object.values(cart).map(item=>`${item.name} (${item.sku}) × ${item.qty} — ${(item.qty*PRICE).toLocaleString("en-US")} LE`).join("\n");
+ $("#orderSummary").value=summary;
+ $("#orderTotal").value=(cartQty()*PRICE).toLocaleString("en-US")+" LE";
+ $("#checkoutStatus").textContent="";
+ $("#checkoutModal").classList.add("show");
+}
+function closeCheckout(){$("#checkoutModal").classList.remove("show");}
+$("#checkout").addEventListener("click",openCheckout);
+$("#closeCheckout").addEventListener("click",closeCheckout);
+$("#cancelCheckout").addEventListener("click",()=>{closeCheckout();openCart();});
+$("#checkoutModal").addEventListener("click",e=>{if(e.target.id==="checkoutModal")closeCheckout();});
+$("#checkoutForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!cartQty()){closeCheckout();showToast("YOUR BAG IS EMPTY");return;}
+ const submit=$("#placeOrder"),status=$("#checkoutStatus");
+ submit.disabled=true;submit.textContent="SENDING ORDER...";status.textContent="Sending your order securely...";
+ const data=Object.fromEntries(new FormData(e.currentTarget).entries());
+ delete data._honey;
+ try{
+  const response=await fetch("https://formsubmit.co/ajax/migomigo5567@gmail.com",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+  const result=await response.json();
+  if(!response.ok||result.success===false)throw new Error(result.message||"Order could not be sent.");
+  Object.keys(cart).forEach(key=>delete cart[key]);renderCart();e.currentTarget.reset();closeCheckout();showToast("ORDER SENT — THANK YOU!");openCart();
+ }catch(err){status.textContent="We couldn't send the order. Please check your connection and try again, or contact the store directly.";}
+ finally{submit.disabled=false;submit.textContent="PLACE ORDER ↗";}
+});
 $("#searchJump").addEventListener("click",()=>{document.querySelector("#collection").scrollIntoView({behavior:"smooth"});setTimeout(()=>{ $("#searchWrap").classList.add("open");$("#searchInput").focus()},450)});
 $("#searchToggle").addEventListener("click",()=>{ $("#searchWrap").classList.add("open");$("#searchInput").focus()});
 $("#searchInput").addEventListener("input",e=>{
